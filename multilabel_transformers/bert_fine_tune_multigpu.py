@@ -12,6 +12,8 @@ import tensorflow as tf
 
 import tensorflow.keras as keras
 import tensorflow.keras.backend as K
+import tensorflow.compat.v1.keras.backend as K1
+from tensorflow.compat.v1 import Session, ConfigProto
 import numpy as np
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -25,7 +27,7 @@ from scipy.sparse import lil_matrix
 from sklearn.metrics import precision_recall_fscore_support
 
 #from keras.callbacks import Callback, EarlyStopping, ModelCheckpoint
-from tensorflow.keras.callbacks import EarlyStopping, Callbak, ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping, Callback, ModelCheckpoint
 from tensorflow.keras.layers import Input, Dropout, Dense, Average, Maximum, Concatenate, Conv1D, Flatten, GlobalAveragePooling1D, GlobalMaxPooling1D, Lambda, Reshape, Permute
 from tensorflow.keras.models import Model, load_model
 #from tensorflow.keras.utils import multi_gpu_model
@@ -41,8 +43,12 @@ from tensorflow.keras.utils import to_categorical
 #from keras_bert import AdamWarmup, calc_train_steps, get_custom_objects
 #from keras_bert.activations import gelu
 #from keras_transformer import get_encoder_component
-from transformers import TFBertModel, BertConfig, BertTokenizerFast
-
+#from transformers import TFBertModel, BertConfig, BertTokenizerFast
+from transformers import __version__ as t_version
+print("transformers version", t_version)
+from transformers import TFBertModel as LanguageModel
+from transformers import BertTokenizerFast as Tokenizer
+from transformers import BertConfig as ModelConfig
 
 
 def argparser():
@@ -190,9 +196,10 @@ class Metrics(Callback):
 
 def build_model(args):
 
-    config = tf.ConfigProto()
+    config = ConfigProto()
     config.gpu_options.allow_growth = True
-    K.set_session(tf.Session(config=config))
+    K1.set_session(Session(config=config))
+    #K1.set_session(Session())
 
     if args.load_model:
         print("Loading previously saved model..")
@@ -204,22 +211,37 @@ def build_model(args):
     else:
         print("Building model..")
         #bert = load_trained_model_from_checkpoint(args.bert_config, args.init_checkpoint,
-                                                    training=False, trainable=True,
-                                                    seq_len=args.seq_len)
+        #                                            training=False, trainable=True,
+        #                                            seq_len=args.seq_len)
         # [bert.layers[8*enc_i-1] for enc_i in range(0,13)]
 
         ## TODO: read from args/config file
         model_name = 'bert-base-uncased'
-        max_length = 512
+        seq_len = 512
 
-        config = BertConfig.from_pretrained(model_name)
-        config.output_hidden_states = False
+        config = ModelConfig.from_pretrained(model_name)
+        config.output_hidden_states = False    # Do not return the hidden states of all layers.
+
 
         ## TODO: move to preprocessing?
         #tokenizer = BertTokenizerFast.from_pretrained(pretrained_model_name_or_path = model_name, config = config)
 
-        transformer_model = TFBertModel.from_pretrained(model_name, config=config)
-        LM_block = transformer_model.layers[0]
+        input_ids = Input(shape=(seq_len,), dtype='int32')
+        token_type_ids = Input(shape=(seq_len,), dtype='int32')    # aka segment ids
+        attention_mask = Input(shape=(seq_len,), dtype='int32')
+
+        pretrained_model = LanguageModel.from_pretrained(model_name, config=config)
+        pretrained_outputs = pretrained_model(
+            input_ids,
+            token_type_ids=token_type_ids,
+            attention_mask=attention_mask
+        )
+        sequence_output, pooled_output = pretrained_outputs[:2]
+
+        pooled_output = Dropout(config.hidden_dropout_prob)(pooled_output)
+        output_probs = Dense(get_label_dim(args.train), activation='softmax')(pooled_output)
+
+        """LM_block = transformer_model.layers[0]
 
         input_ids = Input(shape=(max_length,), name='input_ids', dtype='int32')
         inputs = {'input_ids': input_ids}
@@ -228,7 +250,7 @@ def build_model(args):
         dropout = Dropout(config.hidden_dropout_prob, name='pooled_output')
         pooled_output = dropout(LM_output, training=False)
 
-        output = Dense(units=get_label_dim(args.train), kernel_initializer=TruncatedNormal(stddev=config.initializer_range), name='output')(pooled_output)
+        output = Dense(units=get_label_dim(args.train), kernel_initializer=TruncatedNormal(stddev=config.initializer_range), name='output')(pooled_output)"""
         #outputs = {'output': output}
 
         """
@@ -257,7 +279,12 @@ def build_model(args):
         #output_layer = Dense(get_label_dim(args.train), activation='sigmoid', name="label_out")(concat)
         """
 
-        model = Model(inputs=inputs, outputs=output, name='BERT_MultiLabel_MultiClass')
+        model = Model(
+            inputs=[input_ids, token_type_ids, attention_mask],
+            outputs=[output_probs]
+        )
+        #model = Model(inputs=inputs, outputs=output, name='BERT_MultiLabel_MultiClass')
+
         """model = Model(bert.input, output_layer)
 
         total_steps, warmup_steps =  calc_train_steps(num_example=get_example_count(args.train),

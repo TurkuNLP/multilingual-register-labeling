@@ -3,8 +3,8 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=64G
-#SBATCH -p gpu
-#SBATCH -t 17:55:00
+#SBATCH -p gputest
+#SBATCH -t 00:15:00
 #SBATCH --gres=gpu:v100:1
 #SBATCH --ntasks-per-node=1
 #SBATCH --account=Project_2002026
@@ -18,17 +18,12 @@ rm logs/current.out
 ln -s $SLURM_JOBID.err logs/current.err
 ln -s $SLURM_JOBID.out logs/current.out
 
-#source /scratch/project_2002026/multilabel_bert/neuro_classifier/multilabel/VENV2/bin/activate
-#python
-#import keras_bert
 module purge
-module load tensorflow
-source /scratch/project_2002026/multilabel_bert/neuro_classifier/multilabel/VENV3/bin/activate
+module load tensorflow/2.2-hvd
+source VENV-tf2.2-transformers3.4/bin/activate
 
 
-#module load keras
-#module load keras_bert
-#from keras import bert
+
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 #export MODEL_DIR=/scratch/project_2002026/bert/cased_L-12_H-768_A-12
@@ -50,7 +45,7 @@ BS=7 #7
 COMMENT="bert-large,cls,amsgrad,warmup0.1,devBeg"
 DATA_SUFFIX=""
 
-echo -e "$SLURM_JOBID\t$LR\t$EPOCHS\t$BS\t$DATA_SUFFIX\t$COMMENT" >> experiments.log
+#echo -e "$SLURM_JOBID\t$LR\t$EPOCHS\t$BS\t$DATA_SUFFIX\t$COMMENT" >> experiments.log
 
 
 
