@@ -3,8 +3,8 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=64G
-#SBATCH -p gpu
-#SBATCH -t 17:55:00
+#SBATCH -p gputest
+#SBATCH -t 00:15:00
 #SBATCH --gres=gpu:v100:1
 #SBATCH --ntasks-per-node=1
 #SBATCH --account=Project_2002026
@@ -54,8 +54,9 @@ echo -e "$SLURM_JOBID\t$LR\t$EPOCHS\t$BS\t$DATA_SUFFIX\t$COMMENT" >> experiments
 
 
 
-for f in 1 2 3;
-do srun python bert_fine_tune_multigpu.py \
+#for f in 1 2 3;
+#do 
+srun python bert_fine_tune_multigpu.py \
   --train $DATA_DIR/train$DATA_SUFFIX-processed.jsonl.gz \
   --dev $DATA_DIR/dev-processed.jsonl.gz \
   --init_checkpoint $MODEL_DIR/bert_model.ckpt \
@@ -64,8 +65,8 @@ do srun python bert_fine_tune_multigpu.py \
   --seq_len 512 \
   --epochs $EPOCHS \
   --batch_size $BS \
-  --output_file $OUTPUT_DIR/model$DATA_SUFFIX-$SLURM_JOBID-$f.h5
-done;
+  --output_file $OUTPUT_DIR/model$DATA_SUFFIX-$SLURM_JOBID.h5
+#done;
 #  --load_model $OUTPUT_DIR/model_nblocks3-ep10-2.h5 \
 
 #--load_model $OUTPUT_DIR/model.h5 \
