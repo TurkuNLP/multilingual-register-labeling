@@ -122,20 +122,35 @@ class Metrics(Callback):
             for i, line in tqdm(enumerate(f), desc="Reading dev labels"):
                 self.all_labels[i, json.loads(line)[1]] = 1
             print("Dev labels shape:", self.all_labels.shape)
+
+        with xopen(args.train, "rt") as f:
+            example_count, label_dim = json.loads(f.readline())
+            self.all_labels_train = lil_matrix((example_count, label_dim), dtype='b')
+            for i, line in tqdm(enumerate(f), desc="Reading train labels"):
+                self.all_labels_train[i, json.loads(line)[1]] = 1
+            print("Train labels shape:", self.all_labels_train.shape)
         if args.dev_all is not None:
             with xopen(args.label_mapping) as f:
                 self.labels_mapping = json.loads(f.read())
 
+        self.labels_prob = None
+        self.test_labels_prob = None
+
     def on_epoch_end(self, epoch, logs):
         print("Predicting probabilities..")
-        labels_prob = self.model.predict_generator(data_generator(args.dev, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=True,
+        if self.labels_prob is None:
+            self.labels_prob = self.model.predict_generator(data_generator(args.train, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=True,
+                                                    steps=ceil(get_example_count(args.train) / args.eval_batch_size), verbose=1)
+        if self.test_labels_prob is None:
+            self.test_labels_prob = self.model.predict_generator(data_generator(args.dev, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=True,
                                                     steps=ceil(get_example_count(args.dev) / args.eval_batch_size), verbose=1)
+
         if args.label_mapping is not None:
             full_labels_prob = np.zeros(self.all_labels.shape)
-            for i, probs in enumerate(labels_prob):
+            for i, probs in enumerate(self.test_labels_prob):
                np.put(full_labels_prob[i], self.labels_mapping, probs)
 
-            labels_prob = full_labels_prob
+            self.test_labels_prob = full_labels_prob
 
         # batch_size = 1024
         # eval_loss = 0
@@ -158,12 +173,12 @@ class Metrics(Callback):
 
         # print("eval_loss:", eval_loss)
 
-        print("Probabilities to labels..")
+        print("Probabilities to labels on train set..")
         for threshold in np.arange(args.threshold_start, args.threshold_end, args.threshold_step):
             print("Threshold:", threshold)
-            labels_pred = lil_matrix(labels_prob.shape, dtype='b')
-            labels_pred[labels_prob>=threshold] = 1
-            precision, recall, f1, _ = precision_recall_fscore_support(self.all_labels, labels_pred, average="micro")
+            labels_pred = lil_matrix(self.labels_prob.shape, dtype='b')
+            labels_pred[self.labels_prob>=threshold] = 1
+            precision, recall, f1, _ = precision_recall_fscore_support(self.all_labels_train, labels_pred, average="micro")
             if f1 > self.best_f1:
                 self.best_f1 = f1
                 self.best_f1_epoch = epoch
@@ -172,7 +187,16 @@ class Metrics(Callback):
             print("Recall:", recall)
             print("F1-score:", f1, "\n")
 
-        print("Current F_max:", self.best_f1, "epoch", self.best_f1_epoch+1, "threshold", self.best_f1_threshold, '\n')
+        print("Current train F_max:", self.best_f1, "epoch", self.best_f1_epoch+1, "threshold", self.best_f1_threshold, '\n')
+
+        test_labels_pred = lil_matrix(self.test_labels_prob.shape, dtype='b')
+        test_labels_pred[self.test_labels_prob>=self.best_f1_threshold] = 1
+        test_precision, test_recall, test_f1, _ = precision_recall_fscore_support(self.all_labels, test_labels_pred, average="micro")
+        print("\nValidation/Test performance at threshold %.2f:" % self.best_f1_threshold)
+        print("Precision:", test_precision)
+        print("Recall:", test_recall)
+        print("F1-score:", test_f1, "\n")
+
 
     def on_batch_end(self, batch, logs):
         if args.print_lr:
