@@ -138,11 +138,9 @@ class Metrics(Callback):
 
     def on_epoch_end(self, epoch, logs):
         print("Predicting probabilities..")
-        if self.labels_prob is None:
-            self.labels_prob = self.model.predict_generator(data_generator(args.train, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=True,
+        self.labels_prob = self.model.predict_generator(data_generator(args.train, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=True,
                                                     steps=ceil(get_example_count(args.train) / args.eval_batch_size), verbose=1)
-        if self.test_labels_prob is None:
-            self.test_labels_prob = self.model.predict_generator(data_generator(args.dev, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=True,
+        self.test_labels_prob = self.model.predict_generator(data_generator(args.dev, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=True,
                                                     steps=ceil(get_example_count(args.dev) / args.eval_batch_size), verbose=1)
 
         if args.label_mapping is not None:
