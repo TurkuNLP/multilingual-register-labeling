@@ -9,7 +9,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorflow as tf
 # tf.logging.set_verbosity(tf.logging.ERROR)
-
+from tensorflow.keras.metrics import AUC
 import keras
 import keras.backend as K
 import numpy as np
@@ -22,7 +22,7 @@ from xopen import xopen
 from tqdm import tqdm
 
 from scipy.sparse import lil_matrix
-from sklearn.metrics import precision_recall_fscore_support
+from sklearn.metrics import precision_recall_fscore_support,classification_report,auc,precision_recall_curve,roc_auc_score
 
 from keras.callbacks import Callback, EarlyStopping, ModelCheckpoint
 from keras.layers import Average, Maximum, Concatenate, Conv1D, Dense, Dropout, Flatten, GlobalAveragePooling1D, GlobalMaxPooling1D, Lambda, Reshape, Permute
@@ -138,16 +138,23 @@ class Metrics(Callback):
 
     def on_epoch_end(self, epoch, logs):
         print("Predicting probabilities..")
+        #labels_prob = self.model.predict_generator(data_generator(args.dev, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=True,
+        #                                            steps=ceil(get_example_count(args.dev) / args.eval_batch_size), verbose=1)
+        #if self.labels_prob is None:
+         #   self.labels_prob = self.model.predict_generator(data_generator(args.train, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=True,
         self.labels_prob = self.model.predict_generator(data_generator(args.train, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=True,
                                                     steps=ceil(get_example_count(args.train) / args.eval_batch_size), verbose=1)
+        #if self.test_labels_prob is None:
+         #   self.test_labels_prob = self.model.predict_generator(data_generator(args.dev, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=True,
         self.test_labels_prob = self.model.predict_generator(data_generator(args.dev, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=True,
                                                     steps=ceil(get_example_count(args.dev) / args.eval_batch_size), verbose=1)
-
         if args.label_mapping is not None:
             full_labels_prob = np.zeros(self.all_labels.shape)
+            #for i, probs in enumerate(labels_prob):
             for i, probs in enumerate(self.test_labels_prob):
                np.put(full_labels_prob[i], self.labels_mapping, probs)
 
+            #labels_prob = full_labels_prob
             self.test_labels_prob = full_labels_prob
 
         # batch_size = 1024
@@ -171,9 +178,13 @@ class Metrics(Callback):
 
         # print("eval_loss:", eval_loss)
 
+        #print("Probabilities to labels..")
         print("Probabilities to labels on train set..")
         for threshold in np.arange(args.threshold_start, args.threshold_end, args.threshold_step):
             print("Threshold:", threshold)
+            #labels_pred = lil_matrix(labels_prob.shape, dtype='b')
+            #labels_pred[labels_prob>=threshold] = 1
+            #precision, recall, f1, _ = precision_recall_fscore_support(self.all_labels, labels_pred, average="micro")
             labels_pred = lil_matrix(self.labels_prob.shape, dtype='b')
             labels_pred[self.labels_prob>=threshold] = 1
             precision, recall, f1, _ = precision_recall_fscore_support(self.all_labels_train, labels_pred, average="micro")
@@ -185,6 +196,7 @@ class Metrics(Callback):
             print("Recall:", recall)
             print("F1-score:", f1, "\n")
 
+        #print("Current F_max:", self.best_f1, "epoch", self.best_f1_epoch+1, "threshold", self.best_f1_threshold, '\n')
         print("Current train F_max:", self.best_f1, "epoch", self.best_f1_epoch+1, "threshold", self.best_f1_threshold, '\n')
 
         test_labels_pred = lil_matrix(self.test_labels_prob.shape, dtype='b')
@@ -194,6 +206,53 @@ class Metrics(Callback):
         print("Precision:", test_precision)
         print("Recall:", test_recall)
         print("F1-score:", test_f1, "\n")
+
+        true_labels = self.all_labels.toarray()
+        predicted_labels = test_labels_pred.toarray()
+        print(classification_report(true_labels,predicted_labels, digits=5))
+ 
+        roc_aucs =[]
+        aucs = []
+        for i in range(true_labels.shape[1]):
+            prec, rec, ths = precision_recall_curve(true_labels[:,i], self.test_labels_prob[:,i])
+            AUC = auc(rec,prec)
+            aucs.append(AUC)
+            print("auc",i,lab[i], AUC)
+    
+        print("AUC macro avg", np.nanmean(aucs))
+        #try:
+        prec, rec, ths = precision_recall_curve(true_labels.ravel(), self.test_labels_prob.ravel())
+        print("AUC micro avg", auc(rec,prec))
+        #except:
+          #  print("true", true_labels)
+           # print("prob",self.test_labels_prob)
+            #fin_true=
+            #fin_prob=
+            #print("AUC micro avg", auc(rec,prec))
+
+        weighted = np.nansum([aucs[i]*(true_labels[:,i].sum()/true_labels.sum()) for i in range(true_labels.shape[1])])
+        print("AUC weighted avg", weighted)
+
+        for i in range(true_labels.shape[1]):
+            try:
+                roc_auc = roc_auc_score(true_labels[:,i], self.test_labels_prob[:,i])
+                roc_aucs.append(roc_auc)
+                print("roc", i ,lab[i],roc_auc)
+            except ValueError:
+                roc_aucs.append(0)
+                print("label not in data",lab[i],"roc",roc_aucs[-1])
+        print("ROC AUC macro avg", np.nanmean(roc_aucs))
+        #try:
+        print("ROC AUC micro avg",roc_auc_score(true_labels, self.test_labels_prob, average = 'micro'))
+        #print("ROC AUC macro test", roc_auc_score(true_labels, self.test_labels_prob, average = 'macro'))
+       # print("ROC AUC weight test", roc_auc_score(true_labels, self.test_labels_prob, average = 'weighted'))
+
+        #except:
+         #   print("true", true_labels[:,i].tolist())
+          #  print("probs", self.test_labels_prob[:,i].tolist())
+        weighted_roc = np.nansum([roc_aucs[i]*(true_labels[:,i].sum()/true_labels.sum()) for i in range(true_labels.shape[1])])
+        print("ROC AUC weighted avg", weighted_roc)
+       
 
 
     def on_batch_end(self, batch, logs):
@@ -261,6 +320,8 @@ def build_model(args):
         optimizer = keras.optimizers.Adam(lr=args.lr, amsgrad=True)
 
         model.compile(loss=["binary_crossentropy"], optimizer=optimizer, metrics=[])
+        #metrics = [AUC(name='auc', multi_label=True)]
+        #model.compile(loss=["binary_crossentropy"], optimizer=optimizer, metrics=metrics)
 
     if args.gpus > 1:
         template_model = model
