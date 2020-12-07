@@ -1,0 +1,3 @@
+[submodule "transformers-classifier"]
+	path = transformers-classifier
+	url = https://github.com/sronnqvist/transformers-classifier.git
