@@ -17,7 +17,7 @@ from tensorflow.compat.v1 import Session, ConfigProto
 import numpy as np
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-from math import ceil
+from math import ceil, floor
 
 from xopen import xopen
 
@@ -47,8 +47,9 @@ from tensorflow.keras.utils import to_categorical
 from transformers import __version__ as t_version
 print("transformers version", t_version)
 from transformers import TFBertModel as LanguageModel
-from transformers import BertTokenizerFast as Tokenizer
+#from transformers import BertTokenizerFast as Tokenizer
 from transformers import BertConfig as ModelConfig
+from transformers.optimization_tf import create_optimizer
 
 
 def argparser():
@@ -74,6 +75,7 @@ def argparser():
     arg_parse.add_argument("--threshold_step", help="Positive label prediction threshold range step.", metavar="FLOAT", default=0.1, type=float)
     arg_parse.add_argument("--eval_batch_size", help="Batch size for eval calls. Default value is the Keras default.", metavar="INT", default=32, type=int)
     arg_parse.add_argument("--print_lr", help="Print current learning rate for each batch.", action='store_true')
+    arg_parse.add_argument("--warmup_proportion", help="Optimizer warm-up proportion.", metavar="FLOAT", default=0.1, type=float)
     parsed = arg_parse.parse_args()
     if parsed.load_model and (parsed.init_checkpoint or parsed.bert_config):
         arg_parse.error("--load_model and (--init_checkpoint and/or --bert_config) are mutually exclusive.")
@@ -88,6 +90,7 @@ def get_example_count(file_path):
 def get_label_dim(file_path):
     with xopen(file_path, "rt") as f:
         return json.loads(f.readline())[1]
+
 
 def data_generator(file_path, batch_size, seq_len=512):
     while True:
@@ -111,6 +114,28 @@ def data_generator(file_path, batch_size, seq_len=512):
                 labels.append(label_line)
             # Yield what is left as the last batch when file has been read to its end.
             yield ([np.asarray(text), np.zeros_like(text)], np.asarray(labels))
+            break
+
+
+def get_optimizer(num_train_examples, options):
+    steps_per_epoch = ceil(num_train_examples / options.batch_size)
+    num_train_steps = steps_per_epoch * options.epochs
+    num_warmup_steps = floor(num_train_steps * options.warmup_proportion)
+
+    # Mostly defaults from transformers.optimization_tf
+    optimizer, lr_scheduler = create_optimizer(
+        options.lr,
+        num_train_steps=num_train_steps,
+        num_warmup_steps=num_warmup_steps,
+        min_lr_ratio=0.0,
+        adam_beta1=0.9,
+        adam_beta2=0.999,
+        adam_epsilon=1e-8,
+        weight_decay_rate=0.01,
+        power=1.0,
+    )
+    return optimizer
+
 
 class Metrics(Callback):
 
@@ -144,7 +169,7 @@ class Metrics(Callback):
 
     def on_epoch_end(self, epoch, logs):
         print("Predicting probabilities..")
-        labels_prob = self.model.predict_generator(data_generator(args.dev, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=True,
+        labels_prob = self.model.predict_generator(data_generator(args.dev, args.eval_batch_size, seq_len=args.seq_len), use_multiprocessing=False,
                                                     steps=ceil(get_example_count(args.dev) / args.eval_batch_size), verbose=1)
         if args.label_mapping is not None:
             full_labels_prob = np.zeros(self.all_labels.shape)
@@ -287,13 +312,13 @@ def build_model(args):
 
         """model = Model(bert.input, output_layer)
 
-        total_steps, warmup_steps =  calc_train_steps(num_example=get_example_count(args.train),
+        total_steps, warmup_steps =  calc_train_steps(ample=get_example_count(args.train),
                                                     batch_size=args.batch_size, epochs=args.epochs,
                                                     warmup_proportion=0.1)#0.01
         """
         # optimizer = AdamWarmup(total_steps, warmup_steps, lr=args.lr)
-        optimizer = Adam(lr=args.lr, amsgrad=True)
-
+        #optimizer = Adam(lr=args.lr, amsgrad=True)
+        optimizer = get_optimizer(get_example_count(args.train), args)
         model.compile(loss=["binary_crossentropy"], optimizer=optimizer, metrics=[])
 
     callbacks = [Metrics(model)]
@@ -311,9 +336,13 @@ def build_model(args):
     print("Learning rate:", K.eval(model.optimizer.lr))
     # print("Dropout:", args.dropout)
 
-    model.fit_generator(data_generator(args.train, args.batch_size, seq_len=args.seq_len),
-                        steps_per_epoch=ceil( get_example_count(args.train) / args.batch_size ),
-                        use_multiprocessing=True, epochs=args.epochs, callbacks=callbacks,
+    #model.fit_generator(
+
+    # Load data
+    train_input, train_output = zip(*[x for x in data_generator(args.train, args.batch_size, seq_len=args.seq_len)])
+
+    model.fit(train_input, train_output, steps_per_epoch=ceil( get_example_count(args.train) / args.batch_size ),
+                        use_multiprocessing=False, epochs=args.epochs, callbacks=callbacks,
                         validation_data=data_generator(args.dev, args.eval_batch_size, seq_len=args.seq_len),
                         validation_steps=ceil( get_example_count(args.dev) / args.eval_batch_size ))
 

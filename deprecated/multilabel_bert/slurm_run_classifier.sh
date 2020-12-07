@@ -3,8 +3,8 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=64G
-#SBATCH -p gputest
-#SBATCH -t 00:15:00
+#SBATCH -p gpu
+#SBATCH -t 05:15:00
 #SBATCH --gres=gpu:v100:1
 #SBATCH --ntasks-per-node=1
 #SBATCH --account=Project_2002026
@@ -48,7 +48,7 @@ EPOCHS=4  #3-5
 BS=7 #7
 #6
 COMMENT="bert-large,cls,amsgrad,warmup0.1,devBeg"
-DATA_SUFFIX=""
+DATA_SUFFIX="_dummy"
 
 echo -e "$SLURM_JOBID\t$LR\t$EPOCHS\t$BS\t$DATA_SUFFIX\t$COMMENT" >> experiments.log
 

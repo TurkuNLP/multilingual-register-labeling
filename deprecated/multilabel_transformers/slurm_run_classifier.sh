@@ -19,12 +19,12 @@ ln -s $SLURM_JOBID.err logs/current.err
 ln -s $SLURM_JOBID.out logs/current.out
 
 module purge
-module load tensorflow/2.2-hvd
-source VENV-tf2.2-transformers3.4/bin/activate
+module load tensorflow/2.0.0
+source VENV-tf2.0-transformers3.4/bin/activate
 
 
 
-
+export PYTHONPATH=/scratch/project_2002026/samuel/multilingual-register-labeling/multilabel_transformers/VENV-tf2.0-transformers3.4/lib/python3.7/site-packages:$PYTHONPATH
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 #export MODEL_DIR=/scratch/project_2002026/bert/cased_L-12_H-768_A-12
 export MODEL_DIR=/scratch/project_2002026/bert/cased_L-24_H-1024_A-16
