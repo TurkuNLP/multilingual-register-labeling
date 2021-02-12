@@ -6,4 +6,4 @@ This repository includes the following code and data:
 * Modeling utilities
 * (Deprecated: Multilabel BERT (using Keras BERT))
 * (Deprecated: Multilabel Transformers (same as above, adapted to Huggingface library; not functional))
-* Data: Contains the French FrCORE and Swedish SvCORE data introduced in the paper 'Beyond the English Web: Zero-Shot Cross-Lingual and Lightweight Monolingual Classification of Registers'.
+* EACL21_SRW: Contains the French FrCORE and Swedish SvCORE data and code introduced in the paper 'Beyond the English Web: Zero-Shot Cross-Lingual and Lightweight Monolingual Classification of Registers'.
