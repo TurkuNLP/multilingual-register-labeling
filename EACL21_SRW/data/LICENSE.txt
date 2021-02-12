@@ -4,4 +4,4 @@ Sampo Pyysalo, and Veronika Laippala.
 
 FrCORE and SvCORE annotations are licensed under a
 Creative Commons Attribution 4.0 International License,
-see http://creativecommons.org/licenses/by/4.0/
+see http://creativecommons.org/licenses/by-sa/4.0/
