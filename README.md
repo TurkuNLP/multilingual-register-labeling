@@ -15,13 +15,7 @@ Code used to develop the register identification systems applied in Rönnqvist e
 #### Text quality annotations
 Applied and developed by Laippala et al. (2022) and Salmela (2022).
 
-
-* Modeling utilities
-* (Deprecated: Multilabel BERT (using Keras BERT))
-* (Deprecated: Multilabel Transformers (same as above, adapted to Huggingface library; not functional))
-* EACL21_SRW: Contains the French FrCORE and Swedish SvCORE data and code introduced in the paper 'Beyond the English Web: Zero-Shot Cross-Lingual and Lightweight Monolingual Classification of Registers'.
-* Code for training on multiple corpora available [here](https://github.com/sronnqvist/transformers-classifier) and the trained master model [here](http://dl.turkunlp.org/register/nodalida21/model_xlmrL0.5_en%2Bfi%2Bfr%2Bsv-common-8e-7-100.h5.gz) (as reported in Rönnqvist et al. 2021, please cite as below).
-
+#### References:
 ```
 @inproceedings{laippala2022-registeroscar,
 title={Towards better structured and less noisy Web data: Oscar with Register annotations}
@@ -37,5 +31,19 @@ year={2022}
   author={Samuel R\"onnqvist and Valtteri Skantsi and Miika Oinonen and Veronika Laippala},
   booktitle={Proceedings of the 23rd Nordic Conference on Computational Linguistics (NoDaLiDa’21).},
   year={2021}
+}
+```
+```
+@inproceedings{repo-etal-2021-beyond,
+    title = "Beyond the {E}nglish Web: Zero-Shot Cross-Lingual and Lightweight Monolingual Classification of Registers",
+    author = {Repo, Liina  and Skantsi, Valtteri and R{\"o}nnqvist, Samuel and Hellstr{\"o}m, Saara and Oinonen, Miika and Salmela, Anna and Biber, Douglas and Egbert, Jesse and Pyysalo, Sampo and Laippala, Veronika},
+    booktitle = "Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: Student Research Workshop",
+    month = apr,
+    year = "2021",
+    address = "Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2021.eacl-srw.24",
+    doi = "10.18653/v1/2021.eacl-srw.24",
+    pages = "183--191",
 }
 ```
