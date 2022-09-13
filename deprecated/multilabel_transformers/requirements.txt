@@ -1,6 +1,0 @@
-torch
-transformers>=3.4
-tokenizers
-xopen
-tqdm
-
