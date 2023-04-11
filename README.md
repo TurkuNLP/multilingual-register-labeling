@@ -7,10 +7,10 @@ Please cite the below papers if you use these resources!
 ### Data
 
 #### Manual multilingual register annotations
-* FreCORE and SvCORE: register annotations in French and Swedish, developed by Repo et al. (2020) and applied by Rönnqvist et al. (2022)
+* <a href="https://github.com/TurkuNLP/multilingual-register-labeling/tree/master/register-annotations/FrCORE">FreCORE</a> and <a href="https://github.com/TurkuNLP/multilingual-register-labeling/tree/master/register-annotations/SvCORE">SvCORE:</a> register annotations in French and Swedish, developed by Repo et al. (2020) and applied by Rönnqvist et al. (2022)
 * <a href="https://github.com/TurkuNLP/CORE-corpus:">CORE corpus:</a> register annotations in English, developed by Biber and Egbert (2018) and applied by Laippala et al. (2022)
 * <a href="https://github.com/TurkuNLP/FinCORE_full/releases/tag/v1.0">FinCORE:</a> register annotations in Finnish, developed by Skantsi et al. (2023)
-* Evaluation sets in eight further languages, developed by Laippala et al. (2022)
+* <a href="https://github.com/TurkuNLP/multilingual-register-labeling/tree/master/register-annotations">Evaluation sets in eight further languages</a>, developed by Laippala et al. (2022)
 
 #### Automatically labeled datasets
 * Register annotations for Oscar, available at https://huggingface.co/datasets/TurkuNLP/register_oscar, described in Laippala et al. (2022)
