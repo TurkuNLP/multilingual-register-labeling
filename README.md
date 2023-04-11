@@ -1,21 +1,35 @@
-# Multilingual modeling of registers
+## Multilingual modeling of registers
 
-This repository includes the following folders, including annotations and code used in the papers described below. Please cite these papers if you use these resources!
+This repository presents resources for the multilingual modeling of web registers, i.e., text varieties such as news, blogs or how-to pages. The register taxonomy we use is described at https://turkunlp.org/register-annotation-docs/.
 
-#### A transformers Classifier 
-Using Huggingface model repository and TF2/keras, developed by Rönnqvist et al. (2021)
+Please cite the below papers if you use these resources!
 
-#### EACL21-code 
-Code used to develop the register identification systems applied in Rönnqvist et al. (2021)
+### Data
 
-#### Multilingual register annotations
+#### Manual multilingual register annotations
 * FreCORE and SvCORE: register annotations in French and Swedish, developed by Repo et al. (2020) and applied by Rönnqvist et al. (2022)
-* Register annotations in eight further languages, developed by Laippala et al. (2022)
+* CORE: register annotations in English, developed by Biber and Egbert (2018) and applied by Laippala et al. (2022)
+* FinCORE: register annotations in Finnish, developed by Skantsi et al. (2023)
+* Evaluation sets in eight further languages, developed by Laippala et al. (2022)
+
+#### Automatically labeled datasets
+* Register annotations for Oscar, available at https://huggingface.co/datasets/TurkuNLP/register_oscar, described in Laippala et al. (2022)
 
 #### Text quality annotations
 Applied and developed by Laippala et al. (2022) and Salmela (2022).
 
+### Code
+
+##### A transformers Classifier 
+Using Huggingface model repository and TF2/keras, developed by Rönnqvist et al. (2021)
+
+##### EACL21-code 
+Code used to develop the register identification systems applied in Rönnqvist et al. (2021)
+
 #### References:
+```
+@article{skantsi_laippala_2023, title={Analyzing the unrestricted web: The Finnish corpus of online registers}, DOI={10.1017/S0332586523000021}, journal={Nordic Journal of Linguistics}, publisher={Cambridge University Press}, author={Skantsi, Valtteri and Laippala, Veronika}, year={2023}, pages={1–31}}
+```
 ```
 @inproceedings{laippala2022-registeroscar,
 title={Towards better structured and less noisy Web data: Oscar with Register annotations}
@@ -23,8 +37,19 @@ author={Veronika Laippala and Anna Salmela and Samuel R\"onnqvist and Alham Fikr
 booktitle={Proceedings of the Eight Workshop on Noisy User-generated Text (W-NUT 2022)}
 year={2022}
 }
+
+```
 ```
 
+@article{laippala2022corecorpus,
+author={Veronika Laippala and Samuel R{\"o}nnqvist and Miika Oinonen and Aki-Juhani Kyr{\"o}l{\"a}inen and Anna Salmela and Douglas Biber and Jesse Egbert and Sampo Pyysalo},
+title={Register identification from the unrestricted open Web using the Corpus of Online Registers of English},
+year=2022,
+journal={Language Resources and Evaluation},
+doi={ https://doi.org/10.1007/s10579-022-09624-1}
+}
+
+```
 ```
 @inproceedings{ronnqvist2021multilingual,
   title={Multilingual and Zero-Shot is Closing in on Monolingual Web Register Classification},
