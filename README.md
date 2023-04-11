@@ -29,7 +29,7 @@ Code used to develop the register identification systems applied in Rönnqvist e
 ### Demo
 * Demo available at https://live.european-language-grid.eu/catalogue/tool-service/20212
 
-#### References:
+### References:
 ```
 @article{skantsi_laippala_2023, title={Analyzing the unrestricted web: The Finnish corpus of online registers}, 
 DOI={10.1017/S0332586523000021}, journal={Nordic Journal of Linguistics}, 
