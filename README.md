@@ -16,15 +16,15 @@ Please cite the below papers if you use these resources!
 * Register annotations for Oscar, available at https://huggingface.co/datasets/TurkuNLP/register_oscar, described in Laippala et al. (2022)
 
 #### Text quality annotations
-Applied and developed by Laippala et al. (2022) and Salmela (2022).
+* Applied and developed by Laippala et al. (2022) and Salmela (2022).
 
 ### Code
 
 ##### A transformers Classifier 
-Using Huggingface model repository and TF2/keras, developed by Rönnqvist et al. (2021)
+* Using Huggingface model repository and TF2/keras, developed by Rönnqvist et al. (2021)
 
 ##### EACL21-code 
-Code used to develop the register identification systems applied in Rönnqvist et al. (2021)
+* Code used to develop the register identification systems applied in Rönnqvist et al. (2021)
 
 ### Demo
 * Demo available at https://live.european-language-grid.eu/catalogue/tool-service/20212
