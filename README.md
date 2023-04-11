@@ -26,6 +26,9 @@ Using Huggingface model repository and TF2/keras, developed by Rönnqvist et al.
 ##### EACL21-code 
 Code used to develop the register identification systems applied in Rönnqvist et al. (2021)
 
+### Demo
+* Demo available at https://live.european-language-grid.eu/catalogue/tool-service/20212
+
 #### References:
 ```
 @article{skantsi_laippala_2023, title={Analyzing the unrestricted web: The Finnish corpus of online registers}, 
