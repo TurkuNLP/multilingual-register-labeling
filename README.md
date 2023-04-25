@@ -1,6 +1,6 @@
 ## Multilingual modeling of registers
 
-This repository presents resources for the multilingual modeling of web registers, i.e., text varieties such as news, blogs or how-to pages. The register taxonomy we use is described at https://turkunlp.org/register-annotation-docs/.
+This repository presents resources for the multilingual modeling of web registers, i.e., text varieties such as news, blogs or how-to pages. The list of registers we use is described at https://turkunlp.org/register-annotation-docs/.
 
 Please cite the below papers if you use these resources!
 
