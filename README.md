@@ -29,6 +29,9 @@ Please cite the below papers if you use these resources!
 ### Demo
 * Demo available at https://live.european-language-grid.eu/catalogue/tool-service/20212
 
+### Funding
+We thank the Academy of Finland, Emil Aaltonen Foundation and Fulbright Finland for funding.
+
 ### References:
 ```
 @article{skantsi_laippala_2023, title={Analyzing the unrestricted web: The Finnish corpus of online registers}, 
