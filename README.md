@@ -32,7 +32,7 @@ Please cite the below papers if you use these resources!
 ### Funding
 We thank the Academy of Finland, Emil Aaltonen Foundation and Fulbright Finland for funding.
 
-### References:
+### References
 ```
 @article{skantsi_laippala_2023, title={Analyzing the unrestricted web: The Finnish corpus of online registers}, 
 DOI={10.1017/S0332586523000021}, journal={Nordic Journal of Linguistics}, 
