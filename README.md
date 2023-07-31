@@ -1,8 +1,20 @@
 ## Multilingual modeling of registers
 
-This repository presents resources for the multilingual modeling of web registers, i.e., text varieties such as news, blogs or how-to pages. The list of registers we use is described at https://turkunlp.org/register-annotation-docs/.
+This repository presents resources for the multilingual modeling of web registers, i.e., text varieties such as news, blogs or how-to pages. 
 
 Please cite the below papers if you use these resources!
+
+### Register scheme
+
+We apply the register scheme originally developed for the <a href="https://github.com/TurkuNLP/CORE-corpus">Corpus of Online Registers of English</a> (CORE) by Jesse Egbert, Douglas Biber and Mark Davies.
+
+The scheme is hierarchical with eight main registers: Spoken, Lyrical, Informational Description, Informational Persuasion, Opinion, Narrative, How-to and Interactive Discussion. 
+
+Additionally, the scheme has a technical category Machine-translated / Generated.
+
+The main registers can be further described with sub-register labels, such as News Article, Opinion Blog or Description of a Thing. 
+
+All the register categories are described in detail at https://turkunlp.org/register-annotation-docs/.
 
 ### Data
 
